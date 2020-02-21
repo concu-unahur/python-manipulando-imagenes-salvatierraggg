@@ -6,8 +6,8 @@ from skimage import io
 import requests
 import json
 
-# carpeta_imagenes = './imagenes'
-carpeta_imagenes = '/home/sebas/UNaHur/progConcu_2020verano/python-manipulacion-imagenes/imagenes'
+carpeta_imagenes = './imagenes'
+#carpeta_imagenes = '/home/sebas/UNaHur/progConcu_2020verano/python-manipulacion-imagenes/imagenes'
 
 def armar_ruta(nombre):
   return os.path.join(carpeta_imagenes, nombre)
@@ -31,6 +31,7 @@ class Pixabay():
   def __init__(self, key, carpeta_imagenes):
     self.key = key
     self.carpeta_imagenes = carpeta_imagenes
+    self.rutas=[]
     
 
   def buscar_imagenes(self, query, cantidad):
@@ -39,3 +40,16 @@ class Pixabay():
     response = requests.get(url)
     jsonResponse = json.loads(response.text)
     return map(lambda h: h['largeImageURL'], jsonResponse['hits'])
+  
+  def descargar_imagen(self, url):
+      bytes_imagen = requests.get(url)
+      nombre_imagen = url.split('/')[-1]
+
+      ruta_archivo = os.path.join(self.carpeta_imagenes, nombre_imagen)
+      self.rutas.append(ruta_archivo)
+      with open(ruta_archivo, 'wb') as archivo:
+        archivo.write(bytes_imagen.content)
+
+
+
+  #debo guardar la runa en cuanto la descargo

@@ -1,9 +1,8 @@
 import numpy as np
 from PIL import Image
-from archivos import *
-
-
-
+from archivos import Pixabay,leer_imagen,leer_imagen2,carpeta_imagenes
+import threading
+import logging
 
 def concatenar_horizontal(imagenes):#imagenes es una lista de imagenes
   min_img_shape = sorted([(np.sum(i.size), i.size) for i in imagenes])[0][1]
@@ -19,18 +18,19 @@ def concatenar_vertical(imagenes):
 
 
 ##########################
-privado=Pixabay('15336424-3010f778fbb10add8cf653c86', "./imagenes")#mi clave y donde guardar
-urls=privado.buscar_imagenes("LOL", 20)
+privado=Pixabay('15336424-3010f778fbb10add8cf653c86',carpeta_imagenes)#mi clave y donde guardar
+urls=privado.buscar_imagenes("computadoras", 3)
 ##########################
 
-
-
-imagenes=[]
+#imagenes=[]
 for u in urls:
-  imagenes.append(leer_imagen(u))
+  logging.info(f"descargando imagen{u}")
+  threading.Thread(target=privado.descargar_imagen,args=[u]).start
+  #imagenes.append(leer_imagen(u))
+  
 
-imagen1 = leer_imagen('1.jpg')
-imagen2 = leer_imagen('2.jpg')
+#imagen1 = leer_imagen('1.jpg')
+#imagen2 = leer_imagen('2.jpg')
 
-escribir_imagen('concatenada-vertical.jpg', concatenar_vertical(imagenes))    
-escribir_imagen('concatenada-horizontal.jpg', concatenar_horizontal(imagenes))    
+#escribir_imagen('concatenada-vertical.jpg', concatenar_vertical(imagenes))#utilizar listas    
+#escribir_imagen('concatenada-horizontal.jpg', concatenar_horizontal(imagenes))    
