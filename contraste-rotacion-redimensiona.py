@@ -1,22 +1,19 @@
-from archivos import leer_imagen2, escribir_imagen2
+from archivos import leer_imagen, escribir_imagen
 from skimage import exposure, transform, io
 
 
 def contraste_adaptativo(img):
   # Contraste adaptativo: https://en.wikipedia.org/wiki/Adaptive_histogram_equalization
-  img_adapteq = exposure.equalize_adapthist(img, clip_limit=0.03)
-  return img_adapteq
+  return exposure.equalize_adapthist(img, clip_limit=0.03)
 
 def rotacion(img, angulo):
-  img_rot = transform.rotate(img,angulo)
-  return img_rot
+  return transform.rotate(img, angulo)
 
-def redimensiona(img, ancho, alto):
-  img_resc = transform.resize(img,(ancho,alto))
-  return img_resc
+def redimensionar(img, ancho, alto):
+  return transform.resize(img, (ancho, alto))
 
-imagen1 = leer_imagen2('1.jpg')
+imagen1 = leer_imagen('1.jpg')
 
-escribir_imagen2('contraste.jpg', contraste_adaptativo(imagen1))    
-escribir_imagen2('rotacion.jpg', rotacion(imagen1,25))    
-escribir_imagen2('redim.jpg', redimensiona(imagen1,500,500))
+escribir_imagen('contraste.jpg', contraste_adaptativo(imagen1))
+escribir_imagen('rotacion.jpg', rotacion(imagen1, 25))
+escribir_imagen('redimensionada.jpg', redimensionar(imagen1, 500, 500))
