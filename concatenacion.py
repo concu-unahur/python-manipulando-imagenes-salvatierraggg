@@ -5,7 +5,7 @@ import threading
 import time
 imagenes=[]
 api=Pixabay('15336424-3010f778fbb10add8cf653c86',"./imagenes")
-#monitor=threading.Condition()
+monitor=threading.Condition()
 
 def concatenar_horizontal(imagenes):
   # Buscamos el alto menor entre todas las imágenes
@@ -28,16 +28,18 @@ def concatenar_vertical(imagenes):
   # Concatenamos
   return cv2.vconcat(imagenes_redimensionadas)
 
-urls = api.buscar_imagenes("cosas", 5)#es una lista de hits
+urls = api.buscar_imagenes("cosas", 8)#es una lista de hits
 
 for u in urls:
   logging.info(f'Descargando {u}')
-  threading.Thread(target=api.descargar_imagen, args=[u]).start()
-  #monitor.notify()
-if len(api.nombres)>imagenes:
-  for i in range(2):
-    imagenes.append(leer_imagen(api.nombres.pop(0)))
-
+  #api.descargar_imagen(u)
+  threading.Thread(target=api.descargar_imagen, args=[u,leer_imagen]).start()
   
-escribir_imagen('concatenada-vertical.jpg', concatenar_vertical(imagenes))    
-escribir_imagen('concatenada-horizontal.jpg', concatenar_horizontal(imagenes))  
+
+time.sleep(6)
+i=0
+while (len(api.nombres)>=2):
+  threading.Thread(target=escribir_imagen,args=['concatenada-vertical.jpg', concatenar_vertical([api.nombres[i],api.nombres[i+1])])
+  i+=2
+  #escribir_imagen('concatenada-vertical.jpg', concatenar_vertical([api.nombres.pop(0),api.nombres.pop(0)]))    
+ 
