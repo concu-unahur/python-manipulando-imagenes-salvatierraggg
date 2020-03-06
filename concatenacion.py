@@ -30,16 +30,18 @@ def concatenar_vertical(imagenes):
 
 urls = api.buscar_imagenes("cosas", 8)#es una lista de hits
 
-for u in urls:
-  logging.info(f'Descargando {u}')
-  #api.descargar_imagen(u)
-  threading.Thread(target=api.descargar_imagen, args=[u,leer_imagen]).start()
-  
+with monitor:
+  for u in urls:
+    logging.info(f'Descargando {u}')
+    #api.descargar_imagen(u)
+    threading.Thread(target=api.descargar_imagen, args=[u,leer_imagen]).start()
+    monitor.notify()
 
-time.sleep(6)
-i=0
-while (len(api.nombres)>=2):
-  threading.Thread(target=escribir_imagen,args=['concatenada-vertical.jpg', concatenar_vertical([api.nombres[i],api.nombres[i+1])])
-  i+=2
-  #escribir_imagen('concatenada-vertical.jpg', concatenar_vertical([api.nombres.pop(0),api.nombres.pop(0)]))    
- 
+
+  
+while (True):
+    with monitor:#seccion critica
+      while len(api.nombres)<2:
+        monitor.wait()
+        #threading.Thread(target=escribir_imagen,args=['concatenada-vertical.jpg', concatenar_vertical([api.nombres.pop(0),api.nombres.pop(0)])]
+        escribir_imagen('concatenada-vertical.jpg', concatenar_vertical([api.nombres.pop(0),api.nombres.pop(0)]))    

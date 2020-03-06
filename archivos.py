@@ -33,10 +33,9 @@ class Pixabay():
     #lista de rutas
   
   def descargar_imagen(self, url,leer_imagenes):
+    
     bytes_imagen = requests.get(url)
     nombre_imagen = url.split('/')[-1]
-    
-    
     ruta_archivo = os.path.join(self.carpeta_imagenes, nombre_imagen)
     with open(ruta_archivo, 'wb') as archivo:
       archivo.write(bytes_imagen.content)
