@@ -1,6 +1,8 @@
 from skimage import io, img_as_ubyte
 from pathlib import Path
 import requests
+import threading
+import logging
 import json
 import os
 import time
@@ -32,18 +34,17 @@ class Pixabay():
     return map(lambda h: h['largeImageURL'], jsonResponse['hits'])
     #lista de rutas
   
-  def descargar_imagen(self, url,leer_imagenes):
-    
-    bytes_imagen = requests.get(url)
-    nombre_imagen = url.split('/')[-1]
-    ruta_archivo = os.path.join(self.carpeta_imagenes, nombre_imagen)
-    with open(ruta_archivo, 'wb') as archivo:
-      archivo.write(bytes_imagen.content)
-    self.nombres.append(leer_imagenes(nombre_imagen))
+  def descargar_imagen(self, url,nombre):
+    try:
+      bytes_imagen = requests.get(url)
+      nombre_imagen = nombre##url.split('/')[-1]
+      ruta_archivo = os.path.join(self.carpeta_imagenes, nombre_imagen)
+      with open(ruta_archivo, 'wb') as archivo:
+        archivo.write(bytes_imagen.content)
+    finally:
+      logging.info("guardando nombre")
+      self.nombres.append(nombre_imagen)
+      
     
      
     
-
-
-
-  #debo guardar la ruta en cuanto la descargo

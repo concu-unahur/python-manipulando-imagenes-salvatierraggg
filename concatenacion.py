@@ -1,11 +1,16 @@
+
 import cv2
 from archivos import leer_imagen, escribir_imagen,Pixabay
 import logging
 import threading
 import time
+imagenesDisponibles=threading.Condition()
+paresDisponibles=threading.Condition()
+logging.basicConfig(format='%(asctime)s.%(msecs)03d [%(threadName)s] - %(message)s', datefmt='%H:%M:%S', level=logging.INFO)
+i=0
 imagenes=[]
 api=Pixabay('15336424-3010f778fbb10add8cf653c86',"./imagenes")
-monitor=threading.Condition()
+
 
 def concatenar_horizontal(imagenes):
   # Buscamos el alto menor entre todas las imágenes
@@ -28,20 +33,39 @@ def concatenar_vertical(imagenes):
   # Concatenamos
   return cv2.vconcat(imagenes_redimensionadas)
 
-urls = api.buscar_imagenes("cosas", 8)#es una lista de hits
+logging.info('buscando imagenes')
 
-with monitor:
-  for u in urls:
-    logging.info(f'Descargando {u}')
-    #api.descargar_imagen(u)
-    threading.Thread(target=api.descargar_imagen, args=[u,leer_imagen]).start()
-    monitor.notify()
+urls = api.buscar_imagenes("cosas",8)#es una lista de hits
+
+logging.info('iniciando descargas')
+
+for u in urls:
+  i+=1
+  with imagenesDisponibles:
+    try:
+      logging.info(f'Descargando {u}')
+      api.descargar_imagen(u,f"{i}.jpg")
+      #threading.Thread(target=api.descargar_imagen, args=[u,f"{i}.jpg"]).start()
+    finally:
+      time.sleep(2)
+      if len(api.nombres)>=2:
+        with paresDisponibles:
+          imagenes.append([leer_imagen(api.nombres.pop(0)),leer_imagen(api.nombres.pop(0))])
+          logging.info("notificando")
+          paresDisponibles.notify()
 
 
-  
+j=0
 while (True):
-    with monitor:#seccion critica
-      while len(api.nombres)<2:
-        monitor.wait()
-        #threading.Thread(target=escribir_imagen,args=['concatenada-vertical.jpg', concatenar_vertical([api.nombres.pop(0),api.nombres.pop(0)])]
-        escribir_imagen('concatenada-vertical.jpg', concatenar_vertical([api.nombres.pop(0),api.nombres.pop(0)]))    
+    with paresDisponibles:
+      while len(imagenes)<j+1:
+        paresDisponibles.wait()
+      logging.info("termina una espera")
+      threading.Thread(target=escribir_imagen,args=[f'concatenada-vertical{j+1}.jpg', concatenar_vertical(imagenes[j])]).start()
+      threading.Thread(target=escribir_imagen,args=[f'concatenada-horizontal{j+1}.jpg', concatenar_horizontal(imagenes[j])]).start()
+
+      #escribir_imagen(f'concatenada-vertical{j+1}.jpg',concatenar_vertical(imagenes[j]))
+      #escribir_imagen(f'concatenada-horizontal{j+1}.jpg',concatenar_horizontal(imagenes[j]))
+      j+=1
+
+    
